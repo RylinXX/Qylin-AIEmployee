@@ -219,7 +219,7 @@ export const useKnowledgeAssetsStore = create<KnowledgeAssetsStore>((set, get) =
 
     const promise = (async () => {
       try {
-        const res: any = await request.get('/resumes/project-library', { timeout: 20000 }).catch(() => ({}));
+        const res: any = await request.get('/resumes/project-library');
         const rawProjects = Array.isArray(res) ? res : res?.projects || [];
         const mapped: ProjectAsset[] = rawProjects.map((p: any, idx: number) => ({
           _rowKey: p.id || `proj_${idx}_${p.name || ''}`,
@@ -288,7 +288,7 @@ export const useKnowledgeAssetsStore = create<KnowledgeAssetsStore>((set, get) =
 
     const promise = (async () => {
       try {
-        const summaryRes: any = await request.get('/resumes/experience-summary', { params: { limit: 2000 }, timeout: 30000 }).catch(() => ({}));
+        const summaryRes: any = await request.get('/resumes/experience-summary', { params: { limit: 2000 } });
 
         const rawLogic = summaryRes?.logic_analyses || summaryRes?.candidates || [];
         const rawWorks = summaryRes?.work_experiences || [];

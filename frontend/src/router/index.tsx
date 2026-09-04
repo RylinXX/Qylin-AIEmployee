@@ -1,5 +1,11 @@
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  isRouteErrorResponse,
+  Navigate,
+  useLocation,
+  useRouteError,
+} from 'react-router-dom';
 import { Spin } from 'antd';
 import AppLayout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,21 +35,13 @@ const safeLazy = (importFn: () => Promise<any>) =>
   });
 
 const Login = safeLazy(() => import('../pages/Login'));
-const Dashboard = safeLazy(() => import('../pages/Dashboard'));
-const CustomerProjectsList = safeLazy(() => import('../pages/CustomerProjects/List'));
-const CustomerProjectDetail = safeLazy(() => import('../pages/CustomerProjects/Detail'));
-const AISolutionAssistant = safeLazy(() => import('../pages/AIEmployees/List'));
 const KnowledgeAssets = safeLazy(() => import('../pages/KnowledgeAssets'));
-const KnowledgeAssetIntake = safeLazy(() => import('../pages/KnowledgeAssets/Intake'));
 const KnowledgeAssetDetail = safeLazy(() => import('../pages/KnowledgeAssets/Detail'));
 const ResumesList = safeLazy(() => import('../pages/Resumes/List'));
 const ResumeUpload = safeLazy(() => import('../pages/Resumes/Upload'));
 const ResumeDetail = safeLazy(() => import('../pages/Resumes/Detail'));
-const UsersList = safeLazy(() => import('../pages/Settings/Users'));
 const ProfileSettings = safeLazy(() => import('../pages/Settings/Profile'));
 const SystemSettingsPage = safeLazy(() => import('../pages/Settings/System'));
-const IndustryAgentPage = safeLazy(() => import('../pages/IndustryAgent'));
-const AIProductManager = safeLazy(() => import('../pages/AIProductManager'));
 
 const PageFallback = () => (
   <div style={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}>
@@ -58,23 +56,46 @@ const lazyPage = (page: React.ReactNode) => (
 );
 
 const RouteErrorBoundary = () => {
-  const handleReload = () => {
+  const error = useRouteError();
+  const errorMessage = error instanceof Error ? error.message : '';
+  const isChunkError =
+    (error instanceof Error && error.name === 'ChunkLoadError') ||
+    /failed to fetch dynamically imported module/i.test(errorMessage) ||
+    /importing a module script failed/i.test(errorMessage);
+  const isNotFound = isRouteErrorResponse(error) && error.status === 404;
+
+  const title = isNotFound
+    ? '页面不存在'
+    : isChunkError
+      ? '页面资源加载失败'
+      : '页面加载失败';
+  const description = isNotFound
+    ? '当前地址没有对应功能，请返回知识资产库后重新选择。'
+    : isChunkError
+      ? '页面资源未能完整载入，请刷新后重试。'
+      : '当前页面发生异常，请返回知识资产库后重试。';
+
+  const handleAction = () => {
     sessionStorage.removeItem('chunk_reload_timestamp');
-    window.location.reload();
+    if (isChunkError) {
+      window.location.reload();
+      return;
+    }
+    window.location.assign('/knowledge-assets');
   };
 
   return (
     <div style={{ display: 'grid', placeItems: 'center', minHeight: '70vh', padding: '24px' }}>
       <div style={{ textAlign: 'center', maxWidth: 460 }}>
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#1e293b', marginBottom: 12 }}>
-          ⚡ 系统代码已更新为最新版本
+          {title}
         </h2>
         <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.6, marginBottom: 20 }}>
-          新版本资源文件已部署生效，点击下方按钮即可刷新同步载入最新功能。
+          {description}
         </p>
         <button
           type="button"
-          onClick={handleReload}
+          onClick={handleAction}
           style={{
             background: '#2563eb',
             color: '#fff',
@@ -86,7 +107,7 @@ const RouteErrorBoundary = () => {
             fontWeight: 500,
           }}
         >
-          一键刷新载入最新版本
+          {isChunkError ? '刷新重试' : '返回知识资产库'}
         </button>
       </div>
     </div>
@@ -129,23 +150,23 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />,
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'dashboard',
-        element: lazyPage(<Dashboard />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'workbench',
-        element: lazyPage(<AISolutionAssistant />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'customer-projects',
-        element: lazyPage(<CustomerProjectsList />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'customer-projects/:id',
-        element: lazyPage(<CustomerProjectDetail />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'knowledge-assets',
@@ -153,7 +174,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'knowledge-assets/intake',
-        element: lazyPage(<KnowledgeAssetIntake />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'knowledge-assets/:id',
@@ -172,16 +193,20 @@ const router = createBrowserRouter([
         element: lazyPage(<ResumeDetail />),
       },
       {
+        path: 'ai-employees',
+        element: <Navigate to="/knowledge-assets" replace />,
+      },
+      {
         path: 'ai-solution-assistant',
-        element: lazyPage(<AISolutionAssistant />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'ai-product-manager',
-        element: lazyPage(<AIProductManager />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'industry-agent',
-        element: lazyPage(<AISolutionAssistant />),
+        element: <Navigate to="/knowledge-assets" replace />,
       },
       {
         path: 'settings',

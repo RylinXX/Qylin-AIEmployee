@@ -1,7 +1,6 @@
 import React from 'react';
 import { Layout, Menu, Button, Avatar, Space, Dropdown, Badge, Tag, Popover, Spin, Empty, Typography, Modal, message, Drawer } from 'antd';
 import {
-  DashboardOutlined,
   UserOutlined,
   FileTextOutlined,
   LogoutOutlined,
@@ -13,8 +12,6 @@ import {
   ReloadOutlined,
   CheckCircleOutlined,
   UploadOutlined,
-  RobotOutlined,
-  SolutionOutlined,
   AppstoreOutlined,
   MenuOutlined,
 } from '@ant-design/icons';
@@ -230,19 +227,12 @@ const AppLayout: React.FC = () => {
 
   const menuItems = [
     {
-      key: '/dashboard',
-      icon: <DashboardOutlined />,
-      label: '业务总览',
-      description: '经营指标、异常提醒与近期业务变化',
-      tag: '经营总览',
-      className: 'workflow-nav-item workflow-nav-item-first',
-    },
-    {
       key: '/knowledge-assets',
       icon: <AppstoreOutlined />,
       label: '知识资产库',
       description: '资产检索、证据质量与人工复核',
       tag: '知识治理',
+      className: 'workflow-nav-item workflow-nav-item-first',
     },
     {
       key: '/resumes',
@@ -250,20 +240,6 @@ const AppLayout: React.FC = () => {
       label: '人才样本',
       description: '导入、解析状态与匿名能力档案',
       tag: '能力样本',
-    },
-    {
-      key: '/customer-projects',
-      icon: <SolutionOutlined />,
-      label: '客户项目',
-      description: '客户需求、项目方案与交付进度',
-      tag: '项目交付',
-    },
-    {
-      key: '/ai-solution-assistant',
-      icon: <RobotOutlined />,
-      label: 'AI 解决方案助手',
-      description: '基于人才样本、项目打法与知识资产的 RAG 智能体对话与问答溯源',
-      tag: '智能助手',
       className: 'workflow-nav-item workflow-nav-item-last',
     },
     {
@@ -283,7 +259,7 @@ const AppLayout: React.FC = () => {
 
   const selectedKey = [...filteredMenuItems].sort((a, b) => b.key.length - a.key.length).find(item =>
     location.pathname === item.key || location.pathname.startsWith(`${item.key}/`)
-  )?.key || '/dashboard';
+  )?.key || '/knowledge-assets';
 
   const selectedMenuItem = menuItems.find(item => item.key === selectedKey);
   const pageMeta = location.pathname.startsWith('/settings/profile')

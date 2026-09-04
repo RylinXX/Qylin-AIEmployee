@@ -27,14 +27,12 @@ import {
   EditOutlined,
   EyeOutlined,
   FileSearchOutlined,
-  PlusOutlined,
   ProjectOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
   SearchOutlined,
   TagsOutlined,
   UnorderedListOutlined,
-  RobotOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import request, { getApiErrorMessage } from '../../utils/request';
@@ -380,16 +378,6 @@ const KnowledgeAssetsPage: React.FC = () => {
       fixed: 'right' as const,
       render: (_: any, record: ProjectAsset) => (
         <Space size={6} wrap={false} style={{ whiteSpace: 'nowrap' }}>
-          <Button
-            type="primary"
-            ghost
-            size="small"
-            icon={<RobotOutlined />}
-            onClick={() => navigate(`/workbench?project_name=${encodeURIComponent(record.name)}`)}
-            style={{ borderRadius: '4px' }}
-          >
-            调起 AI 助手
-          </Button>
           {record.resume_id ? (
             <Button
               type="link"
@@ -690,13 +678,6 @@ const KnowledgeAssetsPage: React.FC = () => {
               loading={manualRefreshing}
             >
               刷新资产
-            </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => navigate('/knowledge-assets/intake')}
-            >
-              新建知识切片
             </Button>
           </Space>
         }

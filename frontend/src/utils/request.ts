@@ -6,6 +6,11 @@ const request: any = axios.create({
 });
 
 export const getApiErrorMessage = (error: any, fallback = '操作失败') => {
+  const status = error?.response?.status;
+  if (status >= 500) {
+    return fallback;
+  }
+
   const detail = error?.response?.data?.detail;
   if (Array.isArray(detail)) {
     return detail.map((item) => item?.msg || item?.message || String(item)).join('；') || fallback;

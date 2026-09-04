@@ -50,7 +50,7 @@ const getResumeSummary = (record: any) => (
 
 const EMPTY_METRICS = { total: 0, success: 0, processing: 0, failed: 0, pending: 0 };
 
-const GLOBAL_RESUME_LIST_CACHE = new Map<string, { allItems: any[]; total: number; metrics: typeof EMPTY_METRICS }>();
+const GLOBAL_RESUME_LIST_CACHE = new Map<string, { items: any[]; total: number; metrics: typeof EMPTY_METRICS }>();
 
 export const clearResumeListCache = () => {
   GLOBAL_RESUME_LIST_CACHE.clear();
@@ -69,18 +69,19 @@ const ResumesList: React.FC = () => {
   const queryPage = Number(searchParams.get('page')) || 1;
   const queryPageSize = Number(searchParams.get('pageSize')) || 10;
 
-  const initialFilterKey = JSON.stringify({
+  const initialRequestKey = JSON.stringify({
     name: queryName,
     status: queryStatus,
     position: queryPositionId,
     score: queryScoreRange,
     school: querySchoolTag,
     company: queryCompanyTag,
+    page: queryPage,
+    pageSize: queryPageSize,
   });
-  const cachedInitial = GLOBAL_RESUME_LIST_CACHE.get(initialFilterKey);
-  const initialSliced = cachedInitial ? cachedInitial.allItems.slice((queryPage - 1) * queryPageSize, queryPage * queryPageSize) : [];
+  const cachedInitial = GLOBAL_RESUME_LIST_CACHE.get(initialRequestKey);
 
-  const [data, setData] = useState<any[]>(initialSliced);
+  const [data, setData] = useState<any[]>(cachedInitial?.items || []);
   const [total, setTotal] = useState(cachedInitial?.total || 0);
   const [metrics, setMetrics] = useState(cachedInitial?.metrics || EMPTY_METRICS);
   const [initialLoading, setInitialLoading] = useState(!cachedInitial);
@@ -147,19 +148,20 @@ const ResumesList: React.FC = () => {
   }, [searchParams]);
 
   const fetchResumes = useCallback(async (silent = false, bypassCache = false) => {
-    const filterKey = JSON.stringify({
+    const requestKey = JSON.stringify({
       name: activeSearchName,
       status: activeParseStatus,
       position: selectedPositionId,
       score: selectedScoreRange,
       school: selectedSchoolTag,
       company: selectedCompanyTag,
+      page: currentPage,
+      pageSize,
     });
 
-    const cached = GLOBAL_RESUME_LIST_CACHE.get(filterKey);
+    const cached = GLOBAL_RESUME_LIST_CACHE.get(requestKey);
     if (cached && !bypassCache) {
-      const sliced = cached.allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-      setData(sliced);
+      setData(cached.items);
       setTotal(cached.total);
       setMetrics(cached.metrics);
       setInitialLoading(false);
@@ -179,8 +181,8 @@ const ResumesList: React.FC = () => {
 
     try {
       const params: any = {
-        skip: 0,
-        limit: 500,
+        skip: (currentPage - 1) * pageSize,
+        limit: pageSize,
       };
       if (activeSearchName) params.candidate_name = activeSearchName;
       if (activeParseStatus) params.parse_status = activeParseStatus;
@@ -195,19 +197,18 @@ const ResumesList: React.FC = () => {
         metrics: typeof EMPTY_METRICS;
       };
 
-      const allItems = res.items || [];
-      const totalCount = res.total ?? allItems.length;
+      const items = res.items || [];
+      const totalCount = res.total ?? items.length;
       const metricsData = res.metrics || EMPTY_METRICS;
 
       const result = {
-        allItems,
+        items,
         total: totalCount,
         metrics: metricsData,
       };
 
-      GLOBAL_RESUME_LIST_CACHE.set(filterKey, result);
-      const sliced = allItems.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-      setData(sliced);
+      GLOBAL_RESUME_LIST_CACHE.set(requestKey, result);
+      setData(items);
       setTotal(totalCount);
       setMetrics(metricsData);
       setPollingEnabled((metricsData.processing || 0) > 0);
