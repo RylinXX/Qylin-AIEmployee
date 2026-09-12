@@ -4,6 +4,18 @@ import test from 'node:test';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
+test('router keeps the AI employee entry reachable and reports real route errors', async () => {
+  const source = await read('src/router/index.tsx');
+
+  assert.match(
+    source,
+    /path: 'ai-employees',[\s\S]*?element: lazyPage\(<AISolutionAssistant \/>\)/,
+  );
+  assert.match(source, /useRouteError/);
+  assert.match(source, /isRouteErrorResponse/);
+  assert.doesNotMatch(source, /系统代码已更新为最新版本/);
+});
+
 test('dashboard uses the compact module header', async () => {
   const [dashboard, layout, workbench, css, indexCss] = await Promise.all([
     read('src/pages/Dashboard/index.tsx'),
